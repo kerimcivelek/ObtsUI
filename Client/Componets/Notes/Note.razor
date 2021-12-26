@@ -1,0 +1,161 @@
+﻿@inherits ComponentBase
+
+@inject INoteService noteService;
+@inject IToastService toastService
+
+
+<div class="card card-dark">
+    <div class="card-header bg-info">
+        <h3 class="card-title"><i class="fa fa-list"></i> Notlar</h3>
+        <h3 class="card-title float-md-right">   <a role="button" data-toggle="modal" data-target="#Notes"><i class="fas fa-file"></i> Not Ekle</a> </h3>
+    </div>
+    <EditForm Model="@notedto">
+        <div class="modal fade" id="Notes" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="exampleModalLabel">Not İşlemleri</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    @{
+                        notedto.CustomerId = CustomerId;
+                    }
+
+
+                    <div class="modal-body">
+
+                        <input type="hidden" @bind-value="@notedto.CustomerId" />
+                        <input type="hidden" @bind-value="@notedto.Id" />
+                        <input type="hidden" @bind-value="@notedto.RegisterDate" />
+                        <InputTextArea Class="form-control bg-dark" Id="CustomerId" @bind-Value="@notedto.Text" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-dark" data-dismiss="modal">Kapat</button>
+ 
+                        <button type="submit" @onclick="AddNote" class="btn btn-dark">Kaydet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+
+    <div class="card-body bg-dark overflow-auto" style="max-height: 200px;">
+        @if (noteList == null)
+        {
+            <p class="bg-dark">Kayıtlı Not Yok</p>
+        }
+        else
+        {
+            @foreach (var i in noteList)
+            {
+                <p class="bg-dark">
+                    <button type="submit" @onclick="@(() => NoteDetail(i.Id))" data-toggle="modal"  class="btn btn-dark"><i class="fa fa-trash-alt"></i> </button> @i.Text (@i.RegisterDate.ToString("dd.MM.yyy"))
+                </p>
+            }
+        }
+    </div>
+
+
+    <div class="@modalDeleteClass" id="deletemodal" tabindex="-1" style="display: @displayModeDelete;">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <EditForm Model="notedto" OnValidSubmit="NoteDelete">
+                    <div class="modal-header bg-dark">
+                        <h4 class="modal-title"> <i class="fa fa-exclamation-circle"> Uyarı </i></h4>
+                    </div>
+                    <div class="modal-body bg-dark">
+                        @ChildContentDeleteNote
+                        <input type="hidden" @bind-value="@notedto.Id" />
+                        <div class="alert alert-dark" role="alert">
+                            <b>Not silenecek onaylıyor musun ?</b>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-dark" @onclick="ToggleNoteDelete" data-dismiss="modal"><i class="fa fa-times-circle"></i></button>
+                        <button type="submit" class="btn btn-dark"><i class="fa fa-trash-alt"></i> </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int CustomerId { get; set; }
+
+    NoteDto notedto = new NoteDto();
+
+    NoteDto[] noteList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        noteList = await noteService.NotesList(CustomerId);
+        notedto.RegisterDate = DateTime.Now;
+        StateHasChanged();
+    }
+    private async void AddNote()
+    {
+        try
+        {
+            await noteService.Add(notedto);
+        }
+        catch (Exception e)
+        {
+            toastService.ShowSuccess(e.Message, "Bilgi");
+        }
+
+        noteList = await noteService.NotesList(CustomerId);
+        StateHasChanged();
+    }
+
+    private void NoteDetail(int NoteId)
+    {
+        ToggleNoteDelete();
+        notedto.Id = NoteId;
+        notedto.CustomerId = CustomerId;
+    }
+
+    private async void NoteDelete()
+    {
+        try
+        {
+            await noteService.Delete(notedto);
+        }
+        catch (Exception e)
+        {
+            toastService.ShowSuccess(e.Message, "Bilgi");
+
+        }
+        noteList = await noteService.NotesList(CustomerId);
+        notedto.Id = 0;
+        notedto.Text = null;
+        ToggleNoteDelete();
+        StateHasChanged();
+    }
+
+
+
+
+
+
+    [Parameter]
+    public RenderFragment ChildContentDeleteNote { get; set; }
+
+    bool openDelete = false;
+    string modalDeleteClass => openDelete ? "modal fade show" : "modal fade";
+    string displayModeDelete => openDelete ? "block" : "none";
+
+    private void ToggleNoteDelete()
+    {
+        openDelete = !openDelete;
+        StateHasChanged();
+    }
+
+
+}

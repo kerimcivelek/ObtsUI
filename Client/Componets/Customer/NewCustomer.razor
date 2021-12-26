@@ -1,0 +1,13 @@
+﻿@inherits ComponentBase
+@inject NavigationManager NavigationManager
+
+<li class="nav-item d-none d-sm-inline-block">
+    <a role="button" @onclick="CustomerNew" class="nav-link"> <span class="fa fa-plus"> </span> Yeni Müşteri Ekle</a>
+</li>
+ 
+@code {
+    void CustomerNew()
+    {
+        NavigationManager.NavigateTo("/Customer/Add/");
+    }
+}

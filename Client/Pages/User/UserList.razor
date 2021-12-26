@@ -1,0 +1,65 @@
+﻿@page "/User/List"
+    <Auth />
+    @inject IAuthService AuthService
+    @inject IToastService toastService
+    @inject NavigationManager NavigationManager
+    @inject ILocalStorageService LocalStorage
+
+    <div class="card bg-dark">
+        <div class="card-header bg-dark">
+            <h3 class="card-title bg-dark">
+                <button type="submit" @onclick="AddUser" class="btn-sm btn-dark"><i class="fa fa-user"></i> Yeni Kullanacı Ekle</button>
+            </h3>
+
+            <span class="float-right"> Kullanıcı Listesi </span>
+        </div>
+        @if (users == null)
+        {
+            <p><em>Yükleniyor...</em></p>
+        }
+        else
+        {
+            <table class="table table-responsive-md table-bordered">
+                <thead>
+                    <tr class="bg-dark">
+                        <th>Detay</th>
+                        <th>Kullanıcı Adı</th>
+                        <th>Adı</th>
+                        <th>Soyadı</th>
+                        <th>Firma Adı</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in users)
+                    {
+                        <tr class="bg-dark">
+                            <td><button class="btn btn-dark btn-sm" @onclick="@(() => Detail(i.Id))"><i class="fa fa-edit"></i> </button></td>
+                            <td>@i.UserName</td>
+                            <td>@i.FirstName</td>
+                            <td>@i.LastName</td>
+                            <td>@i.CompanyName</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @code {
+
+        UserDto[] users;
+        protected override async Task OnInitializedAsync()
+        {
+
+            users = await AuthService.GetUsers();
+        }
+        void Detail(int Id)
+        {
+            NavigationManager.NavigateTo("/User/Detail/" + Id);
+        }
+        void AddUser()
+        {
+            NavigationManager.NavigateTo("/User/Add/");
+        }
+    }

@@ -1,0 +1,165 @@
+﻿@layout PrintLayout
+
+@page "/Print/{Id:int}"
+
+<Auth />
+@attribute [Authorize(Roles = "Admin")]
+@inject IOperationService operationService
+@inject IOperationDetailService operationDetailService
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+
+
+<div class="container-fluid">
+
+    <h2 class="text-center display-5">Hizmet Detay Belgesi</h2>
+    <div class="invoice">
+        <!-- title row -->
+        <div class="row">
+            <div class="col-12">
+                <h2 class="page-header">
+                    <i class="fas fa-globe"></i> @OperationDto.CompanyName
+
+
+                </h2>
+            </div>
+            <!-- /.col -->
+        </div>
+
+        <!-- info row -->
+        <div class="row invoice-info">
+            <div class="col-sm-4 invoice-col">
+                <address>
+                    <strong>Müşteri Bilgileri</strong><br>
+                    Adı Soyadı : @OperationDto.NameSurname<br>
+                    Telefon : @OperationDto.Gsm<br>
+                </address>
+            </div>
+            <!-- /.col -->
+            <div class="col-sm-4 invoice-col">
+
+                <address>
+                    <strong> Araç Bilgileri</strong><br>
+                    Marka - Model :@OperationDto.Brand<br>
+                    Yakıt Türü :@OperationDto.Fuel<br>
+                    Yıl : @OperationDto.Year<br>
+                </address>
+            </div>
+            <!-- /.col -->
+            <div class="col-sm-4 invoice-col">
+                <address>
+                    <strong> Dosya Bilgileri</strong><br>
+                    Tarih :@OperationDto.RegisterDate<br>
+                    İşlem Türü :@OperationDto.OperationName<br>
+                    Km :@OperationDto.FirstKm<br>
+                    Km Periyodu :@OperationDto.PeriodKm<br>
+                    Bir Sonraki Km : @OperationDto.LastKm<br>
+                </address>
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+        <!-- Table row -->
+        <div class="row">
+            <div class="col-12 table-responsive">
+
+                @if (DetailListDto == null)
+                {
+                    <p><em>Ürünleri Listelemek İçin Dosya Seçiniz</em></p>
+
+                }
+                else
+                {
+                    <table class="table table-hover  table-head-fixed text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>Kategori</th>
+                                <th>Ürün Adı</th>
+                                <th>Adet</th>
+                                <th>Fiyat</th>
+                                <th>İndirim</th>
+                                <th>Toplam Fiyat</th>
+                                <th>Harici Ürün</th>
+                                <th>Not</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var i in DetailListDto)
+                            {
+                                <tr>
+                                    <td>@i.CategoryName</td>
+                                    <td>@i.ProductName</td>
+                                    <td>@i.Quantity</td>
+                                    <td>@i.Price.ToString("C") </td>
+                                    <td>@i.Discount.ToString("C") </td>
+                                    <td>@i.Total.ToString("C") </td>
+                                    <td>@i.ExternalProduct</td>
+                                    <td>@i.Note</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+
+        <div class="row">
+            <!-- accepted payments column -->
+            <div class="col-6">
+
+
+            </div>
+            <!-- /.col -->
+            <div class="col-6">
+                <p class="lead">Hizmet Toplamları</p>
+
+                <div class="table-responsive">
+                    @if (DetailListDto == null)
+                    {
+                    }
+                    else
+                    {
+                        <table class="table">
+                            <tr>
+                                <th style="width:50%">Toplam Tutar:</th>
+                                <td> @DetailListDto.Sum(x => x.SumPrice).ToString("C")</td>
+                            </tr>
+                            <tr>
+                                <th>İndirim Tutarı:</th>
+                                <td> @DetailListDto.Sum(x => x.Discount).ToString("C")</td>
+                            </tr>
+                            <tr>
+                                <th>Tahsilat Tutarı:</th>
+                                <td>@DetailListDto.Sum(x => x.Total).ToString("C")</td>
+                            </tr>
+                        </table>
+                    }
+                </div>
+                <input class="btn btn-sm bg-dark" hidden="hidden" onclick=window.print(); type="button" value="Yazdır">
+            </div>
+            <!-- /.col -->
+        </div>
+
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    OperationPrintDto OperationDto = new OperationPrintDto();
+    OperationDetailListDto[] DetailListDto;
+    protected override async Task OnInitializedAsync()
+    {
+        OperationDto = await operationService.OperationPrint(Id);
+        DetailListDto = await operationDetailService.GetOperationById(Id);
+
+    }
+}

@@ -1,0 +1,6 @@
+﻿<StaticWebAssets Version="1.0">
+  <ContentRoot BasePath="/" Path="D:\Projelerim\Blazor\ObtsUI\ObtsUI\Client\bin\Debug\netstandard2.1\wwwroot\" />
+  <ContentRoot BasePath="/" Path="D:\Projelerim\Blazor\ObtsUI\ObtsUI\Client\wwwroot\" />
+  <ContentRoot BasePath="_content/Blazored.Modal" Path="C:\Users\Kerim\.nuget\packages\blazored.modal\5.1.0\build\..\staticwebassets\" />
+  <ContentRoot BasePath="_content/Blazored.Toast" Path="C:\Users\Kerim\.nuget\packages\blazored.toast\3.1.2\build\..\staticwebassets\" />
+</StaticWebAssets>

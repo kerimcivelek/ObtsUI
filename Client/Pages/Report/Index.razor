@@ -1,0 +1,195 @@
+﻿@page "/Report/Index"
+
+    <Auth />
+    @inject IDashBoardService DashBoardService
+    @inject NavigationManager NavigationManager
+
+
+    @inject HttpClient Http
+    @inject IJSRuntime JSRuntime
+    @inject ILocalStorageService LocalStorage
+
+
+    <div class="card card-info card-outline row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row col-md-6">
+                        <div class="col-lg-5">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                </div>
+                                <input type="date" class="bg-dark form-control" @bind-value="StartDate" @bind-value:event="oninput" />
+                            </div>
+                            <!-- /input-group -->
+                        </div>
+                        <!-- /.col-lg-6 -->
+                        <div class="col-lg-5">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                </div>
+                                <input type="date" class="bg-dark form-control" @bind-value="EndDate" @bind-value:event="oninput" />
+                            </div>
+                        </div>
+
+                        <div class="col-lg-2">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                </div>
+                                <button type="submit" @onclick="@(() => ReportSelectedDate(StartDate ,EndDate))" class="btn btn-sm btn-dark form-control"> <i class="fas fa-check-circle"></i> Listele</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fa fa-list"></i>   İşlem Türü Dağılımı</h3>
+                                </div>
+                                <div class="card-body table-responsive p-0">
+                                    @if (OperataionTypeReport == null)
+                                    {
+                                        <div class="text-center">
+                                            <div class="spinner-border text-info" role="status">
+                                                <span class="sr-only"> Kayıt Yok</span>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <table class="table table-hover table-head-fixed text-nowrap">
+                                            <thead>
+                                                <tr>
+                                                    <th> İşlem Türü</th>
+                                                    <th>Toplam Dosya</th>
+                                                    <th>Toplam Tutar</th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var i in OperataionTypeReport)
+                                                {
+                                                    <tr class="bg-dark">
+                                                        <td> @i.OperationTypeName</td>
+                                                        <td>@i.totalOperation</td>
+                                                        <td>@i.totalPrice.ToString("C")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
+                                </div>
+
+                                <!-- /.card-body -->
+                            </div>
+                            @if (OperataionTypeReport == null)
+                            {
+                            }
+                            else
+                            {
+                                <ul class="list-group float-right alert-dark text-sm">
+                                    <li class="list-group-item alert-dark float-right">Toplam Tutar :  @OperataionTypeReport.Sum(x => x.totalPrice).ToString("C")</li>
+                                </ul>
+                            }
+                        </div>
+                        <div class="clearfix hidden-md-up"></div>
+                        <div class="col-sm-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fa fa-list"></i>  Kategoriye Göre Ürün Dağılımı</h3>
+                                </div>
+                                <div class="card-body table-responsive p-0">
+                                    @if (ProductByCategoryReport == null)
+                                    {
+                                        <div class="text-center">
+                                            <div class="spinner-border text-info" role="status">
+                                                <span class="sr-only">Kayıt Yok</span>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <table class="table table-hover table-head-fixed text-nowrap">
+                                            <thead>
+                                                <tr>
+                                                    <th> Kategori</th>
+                                                    <th>Ürün</th>
+                                                    <th>Toplam Adet</th>
+                                                    <th>Toplam Tutar</th>
+                                                    @*<th>Oran</th>*@
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var i in ProductByCategoryReport)
+                                                {
+                                                    <tr class="bg-dark">
+                                                        <td> @i.CategoryName</td>
+                                                        <td>@i.ProductName</td>
+                                                        <td>@i.totalOperation</td>
+                                                        <td>@i.totalPrice.ToString("C")</td>
+                                                        @*<td><span class="badge bg-success"> @((i.totalPrice / Total * 100).ToString("0.##")) %</span></td>*@
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
+                                </div>
+                            </div>
+                            @if (ProductByCategoryReport == null)
+                            {
+                            }
+                            else
+                            {
+                                <ul class="list-group float-right alert-dark text-sm">
+                                    <li class="list-group-item alert-dark float-right">Toplam Tutar :  @ProductByCategoryReport.Sum(x => x.totalPrice).ToString("C")</li>
+                                </ul>
+
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @code {
+
+        public decimal Total { get; set; }
+        public decimal Percent { get; set; }
+
+
+
+        public DateTime StartDate { get; set; } = DateTime.Now.Date;
+        public DateTime EndDate { get; set; } = DateTime.Now.Date;
+        public string databables { get; set; } = null;
+        DashboardListDto[] OperataionTypeReport;
+        DashboardListDto[] ProductByCategoryReport;
+
+        protected override async Task OnInitializedAsync()
+        {
+            var t1 = StartDate.ToString("yyyy-MM-dd");
+            var t2 = EndDate.ToString("yyyy-MM-dd");
+            var CompanyId = await LocalStorage.GetItemAsync<int>("Company");
+            OperataionTypeReport = await DashBoardService.OperataionTypeReportSelectedDate(CompanyId, t1, t2);
+            ProductByCategoryReport = await DashBoardService.ProductByCategoryReportSelectedDate(CompanyId, t1, t2);
+
+        }
+
+        private async Task ReportSelectedDate(DateTime StartDate, DateTime EndDate)
+        {
+            var t1 = StartDate.ToString("yyyy-MM-dd");
+            var t2 = EndDate.ToString("yyyy-MM-dd");
+            var CompanyId = await LocalStorage.GetItemAsync<int>("Company");
+            OperataionTypeReport = await DashBoardService.OperataionTypeReportSelectedDate(CompanyId, t1, t2);
+            ProductByCategoryReport = await DashBoardService.ProductByCategoryReportSelectedDate(CompanyId, t1, t2);
+
+            Total = ProductByCategoryReport.Sum(x => x.totalPrice);
+
+            StateHasChanged();
+        }
+
+
+    }

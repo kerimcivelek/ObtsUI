@@ -1,0 +1,143 @@
+﻿@page  "/Customer/Add"
+
+<Auth />
+@inject ICustomerService CustomerService
+@inject IVehicleBrandService BrandService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+
+@inject HttpClient Http
+@inject ILocalStorageService LocalStorage
+
+
+
+
+
+
+<div class="card card-info card-outline">
+    <div class="card-header bg-dark">
+        <h3 class="card-title"> <span class="fa fa-pager"> Kayıt Formu</span>  </h3>
+    </div>
+    <!-- /.card-header -->
+    <!-- form start -->
+    <EditForm Model="@customer" OnValidSubmit="AddCustomer">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="card-body form-horizontal bg-dark">
+            <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label">Müşteri Adı</label>
+                <div class="col-sm-10">
+                    <InputText Class="form-control  bg-dark" Id="Name" @bind-Value="@customer.Name" required="required" />
+                    <div class="alert-danger">
+                        <ValidationMessage For="@(()=>customer.Name)" />
+                    </div>
+
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label">Müşteri Soyadı</label>
+                <div class="col-sm-10">
+                    <InputText Class="form-control  bg-dark" Id="Surname" @bind-Value="@customer.Surname" required="required" />
+                    <ValidationMessage For="@(()=>customer.Surname)" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="col-sm-2 col-form-label">Araç Plakası</label>
+                <div class="col-sm-10">
+                    <InputText Class="form-control  bg-dark" Id="Plaka" @bind-Value="@customer.Plaka" required="required" oninput="this.value = this.value.toUpperCase()" />
+                    <ValidationMessage For="@(()=>customer.Plaka)" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="col-sm-2 col-form-label">Marka</label>
+                <div class="col-sm-10">
+                    <InputText type="text" placeholder="Marka veya Model yazmaya başla" list="textSearch" class="form-control  bg-dark" @bind-Value="@customer.Brand" required="required" />
+                    <datalist id="textSearch">
+                        @if (brandsList != null)
+                        {
+                            @foreach (var data in brandsList)
+                            {
+                                <option value="@data.BrandName">@data.BrandName</option>
+                            }
+                        }
+                    </datalist>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="col-sm-2 col-form-label">Yakıt Türü</label>
+                <div class="col-sm-10">
+                    <InputSelectNumber @bind-Value="@customer.Fuel" id="OperationTypeId" Class="form-control bg-dark ">
+                        <option value="0">--Yakıt Türü Seçiniz--</option>
+                        <option value="Dizel">Dizel</option>
+                        <option value="Benzin">Benzin</option>
+                        <option value="Benzin & LPG">Benzin & LPG</option>
+                        <option value="Hybrid">Hybrid</option>
+                    </InputSelectNumber>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="col-sm-2 col-form-label">Yıl</label>
+                <div class="col-sm-10">
+                    <InputText Class="form-control   bg-dark " Id="Gsm" @bind-Value="@customer.Year" required="required" />
+                    <ValidationMessage For="@(()=>customer.Year)" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="col-sm-2 col-form-label">Gsm</label>
+                <div class="col-sm-10">
+                    <InputText Class="form-control   bg-dark " Id="Gsm" @bind-Value="@customer.Gsm" required="required" />
+                    <ValidationMessage For="@(()=>customer.Gsm)" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="col-sm-2 col-form-label">Not</label>
+                <div class="col-sm-10">
+                    <InputText Class="form-control   bg-dark" Id="Owner" @bind-Value="@customer.Note" />
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark float-right"> <i class="fas fa-user-check"></i> Kaydet</button>
+        </div>
+
+
+    </EditForm>
+</div>
+
+
+@code {
+
+    BrandDto[] brandsList;
+    CustomerDto customer = new CustomerDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        brandsList = await BrandService.GetBrands();
+
+        var userkey = await LocalStorage.GetItemAsync<Guid>("key");
+        customer.key = userkey;
+
+
+
+    }
+
+    private async void AddCustomer()
+    {
+        try
+        {
+            await CustomerService.Add(customer);
+        }
+        catch (Exception e)
+        {
+
+            toastService.ShowSuccess(e.Message.ToString(), customer.Plaka + "(" + customer.Name + " " + customer.Surname + ")");
+            NavigationManager.NavigateTo("/Customer/List/");
+        }
+
+
+    }
+
+    void CustomerBack()
+    {
+        NavigationManager.NavigateTo("/Customer/List/");
+    }
+}

@@ -1,0 +1,112 @@
+﻿@page "/Product/Detail/{Id:int}"
+
+<Auth />
+@inject IProductService productService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+
+@inject HttpClient Http
+@inject ILocalStorageService LocalStorage
+
+
+<div class="row">
+    <!-- left column -->
+    <div class="col-md-12">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">Ürün Ekleme Formu</h3>
+            </div>
+            <EditForm Model="@product">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="card-body form-horizontal bg-dark">
+
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Ürün Adı</label>
+                        <div class="col-sm-10">
+                            <InputText Class="form-control  bg-dark" Id="Name" @bind-Value="@product.ProductName" required="required" />
+                            <div class="alert-danger">
+                                <ValidationMessage For="@(()=>product.ProductName)" />
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Alış Tarihi</label>
+                        <div class="col-sm-10">
+                            <InputDate Class="form-control  bg-dark" Id="Surname" @bind-Value="@product.RegisterDate" required="required" />
+                            <ValidationMessage For="@(()=>product.RegisterDate)" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Alış Fiyatı</label>
+                        <div class="col-sm-10">
+                            <InputNumber Class="form-control  bg-dark" Id="Surname" @bind-Value="@product.PurchasePrice" required="required" />
+                            <ValidationMessage For="@(()=>product.PurchasePrice)" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputPassword3" class="col-sm-2 col-form-label">Satış fiyatı</label>
+                        <div class="col-sm-10">
+                            <InputNumber Class="form-control  bg-dark" Id="Plaka" @bind-Value="@product.SalePrice" required="required" />
+                            <ValidationMessage For="@(()=>product.SalePrice)" />
+                        </div>
+                    </div>
+
+                    <button type="submit" @onclick="Delete" class="btn btn-dark">Sil</button>
+                    <button type="submit" @onclick="Update" class="btn btn-dark">Kaydet</button>
+                    <button type="submit" @onclick="BactToProduct" class="btn btn-dark">Listeye Dön</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    Product product = new Product();
+    protected override async Task OnInitializedAsync()
+    {
+        product = await productService.GetProductById(Id);
+    }
+
+    private async void Update()
+    {
+        try
+        {
+            await productService.Update(product);
+        }
+        catch (Exception e)
+        {
+
+            toastService.ShowSuccess(e.Message.ToString(), product.ProductName);
+        }
+
+    }
+
+    private async void Delete()
+    {
+        try
+        {
+
+            await productService.Delete(product);
+
+            NavigationManager.NavigateTo("/Product/Add/");
+
+        }
+        catch (Exception e)
+        {
+            toastService.ShowError(e.Message.ToString(), product.ProductName);
+        }
+
+    }
+
+    void BactToProduct()
+    {
+        NavigationManager.NavigateTo("/Product/Add/");
+    }
+
+
+
+}

@@ -1,0 +1,110 @@
+﻿@page  "/User/Add"
+    <Auth />
+
+    @inject IAuthService AutService
+    @inject NavigationManager NavigationManager
+    @inject IToastService toastService
+    @inject ICopmanyService CopmanyService
+    @inject HttpClient Http
+    @inject ILocalStorageService LocalStorage
+
+
+    <div class="register-page bg-dark">
+        <!-- left column -->
+        <div class="col-md-8">
+            <div class="card card-info">
+                <div class="card-header">
+                    <h3 class="card-title">Profil</h3>
+                </div>
+                <EditForm Model="@dto">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="card-body form-horizontal bg-dark">
+                        <div class="form-group row">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">Marka</label>
+                            <div class="col-sm-10">
+                                @if (companyList != null)
+                                {
+                                    <InputSelectNumber id="CompanyId" Class="form-control bg-dark" @bind-Value="@dto.CompanyId">
+                                        <option>-Firma Seçiniz-</option>
+                                        @foreach (var data in companyList)
+                                            {
+                                            <option value="@data.CompanyId">@data.Name</option>
+                                            }
+                                    </InputSelectNumber>
+                                }
+                                <ValidationMessage For="@(()=>dto.CompanyId)" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="inputEmail3" class="col-sm-2 col-form-label">Kullanıcı Adı</label>
+                            <div class="col-sm-10">
+                                <InputText Class="form-control  bg-dark" Id="Surname" @bind-Value="@dto.UserName" required="required" />
+                                <ValidationMessage For="@(() => dto.UserName)" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="inputEmail3" class="col-sm-2 col-form-label">Adı</label>
+                            <div class="col-sm-10">
+                                <InputText Class="form-control  bg-dark" Id="Name" @bind-Value="@dto.FirstName" required="required" />
+                                <div class="alert-danger">
+                                    <ValidationMessage For="@(() => dto.FirstName)" />
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="inputEmail3" class="col-sm-2 col-form-label">Soyadı</label>
+                            <div class="col-sm-10">
+                                <InputText Class="form-control  bg-dark" Id="LastName" @bind-Value="@dto.LastName" required="required" />
+                                <ValidationMessage For="@(() => dto.FirstName)" />
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">Parola</label>
+                            <div class="col-sm-10">
+                                <InputText Class="form-control  bg-dark" Id="Plaka" @bind-Value="@dto.Password" required="required" />
+                                <ValidationMessage For="@(() => dto.Password)" />
+                            </div>
+                        </div>
+
+                        <button type="submit" @onclick="Save" class="btn btn-dark float-right">Kaydet</button>
+
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+
+    @code {
+
+        UserDto dto = new UserDto();
+
+
+        SelectCompanyDto[] companyList;
+        protected override async Task OnInitializedAsync()
+        {
+
+            companyList = await CopmanyService.SelectCompany();
+        }
+
+        private async void Save()
+        {
+            try
+            {
+                await AutService.Add(dto);
+                CompanyBack();
+            }
+            catch (Exception e)
+            {
+                toastService.ShowInfo(e.Message.ToString(), dto.FirstName + " " + dto.LastName);
+            }
+        }
+
+        void CompanyBack()
+        {
+            NavigationManager.NavigateTo("/User/List/");
+        }
+
+    }

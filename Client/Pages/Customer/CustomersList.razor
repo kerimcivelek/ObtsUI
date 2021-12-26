@@ -1,0 +1,144 @@
+﻿@page "/Customer/List"
+
+<Auth />
+@inject ICustomerService CustomerService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService LocalStorage
+
+
+
+<div class="card card-info card-outline row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="input-group col-md-12">
+                    <div class="row">
+                        <div class="col-lg-5">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                </div>
+                                <input type="date" class="bg-dark form-control" @bind-value="StartDate" @bind-value:event="oninput" />
+                            </div>
+                            <!-- /input-group -->
+                        </div>
+                        <!-- /.col-lg-6 -->
+                        <div class="col-lg-5">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                </div>
+                                <input type="date" class="bg-dark form-control" @bind-value="EndDate" @bind-value:event="oninput" />
+                            </div>
+                            <!-- /input-group -->
+                        </div>
+
+                        <div class="col-lg-2">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                </div>
+                                <button type="submit" @onclick="@(() => CustomerListSelectedDate(StartDate ,EndDate))" class="btn btn-sm btn-dark form-control"> <i class="fas fa-check-circle"></i></button>
+                            </div>
+                            <!-- /input-group -->
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body table-responsive p-0">
+                @if (customerList == null)
+                {
+                    <div class="text-center">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="sr-only">Yükleniyor...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <table id="example" class="table table-hover table-head-fixed text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>İşlemler</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>Müşteri Adı</th>
+                                <th>Soyadı</th>
+                                <th>Plaka</th>
+                                <th>Marka-Model</th>
+                                <th>Gsm</th>
+                                <th>Not</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var i in customerList)
+                            {
+                                <tr class="odd bg-dark">
+                                    <td>
+                                        <button class="btn btn-dark btn-sm" @onclick="@(() => CustomerDetail(i.Id))"><i class="fa fa-wrench"></i></button>
+                                        <button class="btn btn-dark btn-sm" @onclick="@(() => CustomerEdit(i.Id))"><i class="fa fa-edit"></i> </button>
+                                    </td>
+                                    <td>@i.RegisterDate</td>
+                                    <td>@i.Name</td>
+                                    <td>@i.Surname</td>
+                                    <td>@i.Plaka</td>
+                                    <td>@i.Brand</td>
+                                    <td>@i.Gsm</td>
+                                    <td>@i.Note</td>
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+</div>
+
+@code {
+
+    CustomerDto[] customerList;
+
+    public DateTime StartDate { get; set; } = DateTime.Now.Date;
+    public DateTime EndDate { get; set; } = DateTime.Now.Date;
+    public string databables { get; set; } = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var t1 = StartDate.ToString("yyyy-MM-dd");
+        var t2 = EndDate.ToString("yyyy-MM-dd");
+        var CompanyId = await LocalStorage.GetItemAsync<int>("Company");
+        customerList = await CustomerService.GetCustomerSelectedDate(t1, t2, CompanyId);
+    }
+
+    private async Task CustomerListSelectedDate(DateTime StartDate, DateTime EndDate)
+    {
+        var t1 = StartDate.ToString("yyyy-MM-dd");
+        var t2 = EndDate.ToString("yyyy-MM-dd");
+        var CompanyId = await LocalStorage.GetItemAsync<int>("Company");
+        customerList = await CustomerService.GetCustomerSelectedDate(t1, t2, CompanyId);
+        await JSRuntime.InvokeAsync<object>("baseDataTables", "#example");
+        StateHasChanged();
+    }
+
+    void CustomerDetail(int Id)
+    {
+        NavigationManager.NavigateTo("/Customer/Detail/" + Id);
+    }
+
+    void CustomerEdit(int Id)
+    {
+        NavigationManager.NavigateTo("/Customer/edit/" + Id);
+    }
+
+
+
+
+}

@@ -1,0 +1,10 @@
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\bin\Debug\netstandard2.1\ObtsUI.Shared.deps.json
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\bin\Debug\netstandard2.1\ObtsUI.Shared.dll
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\bin\Debug\netstandard2.1\ObtsUI.Shared.pdb
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\obj\Debug\netstandard2.1\ObtsUI.Shared.AssemblyInfoInputs.cache
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\obj\Debug\netstandard2.1\ObtsUI.Shared.AssemblyInfo.cs
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\obj\Debug\netstandard2.1\ObtsUI.Shared.dll
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\obj\Debug\netstandard2.1\ObtsUI.Shared.pdb
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\obj\Debug\netstandard2.1\ObtsUI.Shared.csproj.CoreCompileInputs.cache
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\obj\Debug\netstandard2.1\ObtsUI.Shared.csproj.AssemblyReference.cache
+D:\Projelerim\Blazor\ObtsUI\ObtsUI\Shared\obj\Debug\netstandard2.1\ObtsUI.Shared.GeneratedMSBuildEditorConfig.editorconfig

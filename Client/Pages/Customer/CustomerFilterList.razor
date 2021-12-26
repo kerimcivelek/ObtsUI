@@ -1,0 +1,97 @@
+﻿@page   "/customer/search/{filter}"
+@inject ICustomerService CustomerService
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
+<Auth />
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-users-cog"></i> Müşteri Listesi</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body table-responsive p-0">
+                @if (customerList == null)
+                {
+                    <div class="text-center">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="sr-only">Yükleniyor...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-hover table-head-fixed text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>İşlemler</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>Müşteri Adı</th>
+                                <th>Soyadı</th>
+                                <th>Plaka</th>
+                                <th>Marka-Model</th>
+                                <th>Gsm</th>
+                                <th>Not</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var i in customerList)
+                            {
+                                <tr class="bg-dark">
+                                    <td>
+                                        <button class="btn btn-dark btn-sm" @onclick="@(() => CustomerDetail(i.Id))"><i class="fa fa-wrench"></i></button>
+                                        <button class="btn btn-dark btn-sm" @onclick="@(() => CustomerEdit(i.Id))"><i class="fa fa-edit"></i> </button>
+                                    </td>
+                                    <td>@i.RegisterDate</td>
+                                    <td>@i.Name</td>
+                                    <td>@i.Surname</td>
+                                    <td>@i.Plaka</td>
+                                    <td>@i.Brand</td>
+                                    <td>@i.Gsm</td>
+                                    <td>@i.Note</td>
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+</div>
+
+
+
+@code {
+
+
+    [Parameter]
+    public string filter { get; set; }
+    CustomerDto[] customerList;
+ 
+
+    protected override async Task OnInitializedAsync()
+    {
+          var CompanyId = await LocalStorage.GetItemAsync<int>("Company");
+            customerList = await CustomerService.SearchCustomer(filter, CompanyId);
+        
+        StateHasChanged();
+
+
+    }
+
+    void CustomerDetail(int Id)
+    {
+        NavigationManager.NavigateTo("/Customer/Detail/" + Id);
+
+    }
+
+
+    void CustomerEdit(int Id)
+    {
+        NavigationManager.NavigateTo("/Customer/edit/" + Id);
+    }
+}

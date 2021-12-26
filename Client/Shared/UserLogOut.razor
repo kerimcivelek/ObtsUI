@@ -1,0 +1,31 @@
+﻿@inherits ComponentBase
+
+
+@inject IAuthService AutService
+@inject NavigationManager NavigationManager
+
+ 
+
+<ul class="navbar-nav ml-auto">
+    <li>
+        <a role="button" class="nav-link" @onclick="LogOut">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Çıkış</span>
+        </a>
+    </li>
+</ul>
+
+
+
+
+@code {
+   
+
+    private async void LogOut()
+    {
+        await AutService.LogOut();
+        NavigationManager.NavigateTo("/login/");
+    }
+
+
+}

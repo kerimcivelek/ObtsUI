@@ -1,0 +1,115 @@
+﻿@page "/Company/companydetail/{Id:int}"
+    <Auth />
+    @inject ICopmanyService CopmanyService
+    @inject NavigationManager NavigationManager
+    @inject IToastService toastService
+    @inject ILocalStorageService LocalStorage
+
+
+
+
+
+
+    <div class="card card-dark">
+        <div class="card-header bg-dark">
+            <h3 class="card-title bg-dark"> <i class="fa fa-list"></i> Firma Detay</h3>
+        </div>
+        <!-- /.card-header -->
+        <!-- form start -->
+        <EditForm Model="@company">
+
+            <div class="card-body form-horizontal bg-dark">
+                <div class="form-group row">
+                    <label for="inputEmail3" class="col-sm-2 col-form-label">Firma Adı</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="CompanyName" @bind-Value="@company.CompanyName" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Firma Yetkilisi</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="Owner" @bind-Value="@company.Owner" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Gsm</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="Owner" @bind-Value="@company.Gsm" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Adres</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="Owner" @bind-Value="@company.Address" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Aktif</label>
+                    <div class="col-sm-10">
+                        <InputCheckbox Class="form-control-sm bg-dark" Id="Address" @bind-Value="@company.Status" />
+                    </div>
+                </div>
+                <div class="card-footer float-right bg-dark">
+                    <button type="button" @onclick="CompanyBack" class="btn btn-dark" data-dismiss="modal">Vazgeç</button>
+                    <button type="submit" @onclick="CompanyDelete" class="btn btn-dark">Sil</button>
+                    <button type="submit" @onclick="UpdateCompany" class="btn btn-dark">Kaydet</button>
+                </div>
+            </div>
+            <!-- /.card-body -->
+            <!-- /.card-footer -->
+        </EditForm>
+    </div>
+
+
+
+
+
+
+    @code {
+
+        [Parameter]
+        public int Id { get; set; }
+        CompanyDto company = new CompanyDto();
+
+        protected override async Task OnInitializedAsync()
+        {
+            company = await CopmanyService.GetCompanyById(Id);
+
+        }
+
+        private async void CompanyDelete()
+        {
+
+            try
+            {
+                await CopmanyService.Delete(company);
+            }
+            catch (Exception e)
+            {
+                toastService.ShowWarning(e.Message, company.CompanyName);
+                CompanyBack();
+            }
+
+
+        }
+        private async void UpdateCompany()
+        {
+
+            try
+            {
+                await CopmanyService.Update(company);
+            }
+            catch (Exception e)
+            {
+
+                toastService.ShowSuccess(e.Message, company.CompanyName);
+                CompanyBack();
+            }
+
+
+        }
+        void CompanyBack()
+        {
+            NavigationManager.NavigateTo("/Company/List/");
+        }
+    }

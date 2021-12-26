@@ -1,0 +1,44 @@
+﻿@inherits LayoutComponentBase
+@inject ICustomerService CustomerService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+
+<Auth />
+<div class="form-inline ml-3">
+
+    <div class="input-group input-group-sm">
+
+        <input class="form-control bg-dark" oninput="this.value = this.value.toUpperCase()" data-widget="sidebar-search" type="search" required="required" placeholder="Araç Plakasını Yazınız"
+               @bind="filter">
+        <div class="input-group-append">
+            <button type="submit" class="btn btn-navbar bg-dark" @onclick="@(() => CustomerDetail(filter))">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+
+
+
+
+    </div>
+</div>
+
+
+@code {
+
+    public string filter { get; set; }
+
+    void CustomerDetail(string Filter)
+    {
+        if (filter == null)
+        {
+            toastService.ShowError("Plaka Alanı Boş Sorgulanamaz", "Uyarı");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/customer/search/" + filter);
+            filter = null;
+        }
+
+    }
+
+}

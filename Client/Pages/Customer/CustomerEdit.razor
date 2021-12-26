@@ -1,0 +1,160 @@
+﻿@page "/customer/edit/{Id:int}"
+
+    <Auth />
+
+    @inject ICustomerService CustomerService
+    @inject IVehicleBrandService BrandService
+    @inject NavigationManager NavigationManager
+    @inject IToastService toastService
+
+    @inject HttpClient Http
+    @inject ILocalStorageService LocalStorage
+
+
+
+
+
+
+    <div class="card card-info">
+        <div class="card-header">
+            <h3 class="card-title"> <span class="fa fa-user-edit"></span> Müşteri Düzenle</h3>
+        </div>
+        <!-- /.card-header -->
+        <!-- form start -->
+        <EditForm Model="@customer">
+            <DataAnnotationsValidator />
+            @*<ValidationSummary />*@
+            <div class="card-body form-horizontal bg-dark">
+                <div class="form-group row">
+                    <label for="inputEmail3" class="col-sm-2 col-form-label">Müşteri Adı</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="CompanyName" @bind-Value="@customer.Name" />
+                        <div class="alert-danger">
+                            <ValidationMessage For="@(()=>customer.Name)" />
+                        </div>
+
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputEmail3" class="col-sm-2 col-form-label">Müşteri Soyadı</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="CompanyName" @bind-Value="@customer.Surname" />
+                        <ValidationMessage For="@(()=>customer.Surname)" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Araç Plakası</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="Owner" @bind-Value="@customer.Plaka" />
+                        <ValidationMessage For="@(()=>customer.Plaka)" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Marka</label>
+                    <div class="col-sm-10">
+                        @if (brandsList != null)
+                        {
+                            <InputSelect id="department" Class="form-control bg-dark" @bind-Value="@customer.Brand">
+                                @foreach (var data in brandsList)
+                                    {
+                                    <option value="@data.BrandName">@data.BrandName</option>
+                                    }
+                            </InputSelect>
+                        }
+                        <ValidationMessage For="@(()=>customer.Brand)" />
+                    </div>
+
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Yakıt Türü</label>
+                    <div class="col-sm-10">
+                        <InputSelectNumber @bind-Value="@customer.Fuel" id="OperationTypeId" Class="form-control bg-dark ">
+                            <option value="0">--Yakıt Türü Seçiniz--</option>
+                            <option value="Dizel">Dizel</option>
+                            <option value="Benzin">Benzin</option>
+                            <option value="Benzin & LPG">Benzin & LPG</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </InputSelectNumber>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Year</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="Owner" @bind-Value="@customer.Year" />
+                        <ValidationMessage For="@(()=>customer.Year)" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Gsm</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="Owner" @bind-Value="@customer.Gsm" />
+                        <ValidationMessage For="@(()=>customer.Gsm)" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Not</label>
+                    <div class="col-sm-10">
+                        <InputText Class="form-control bg-dark" Id="Owner" @bind-Value="@customer.Note" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Aktif</label>
+                    <div class="col-sm-10">
+                        <InputCheckbox Class="form-control-sm bg-dark" Id="Address" @bind-Value="@customer.Status" />
+                    </div>
+                </div>
+                <div class="card-footer  float-right  bg-dark">
+                    <button type="button" @onclick="CustomerBack" class="btn btn-dark" data-dismiss="modal">Vazgeç</button>
+                    <button type="button" @onclick="@(() =>CustomerDetail(customer.Id))" class="btn btn-dark" data-dismiss="modal">Müşteri Dosyası</button>
+                    <button type="submit" @onclick="UpdateCustomer" class="btn btn-dark">Kaydet</button>
+                </div>
+            </div>
+            <!-- /.card-body -->
+            <!-- /.card-footer -->
+        </EditForm>
+    </div>
+
+
+    @code {
+
+        BrandDto[] brandsList;
+        CustomerDto customer = new CustomerDto();
+
+        [Parameter]
+        public int Id { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            customer = await CustomerService.GetCustomerById(Id);
+
+            brandsList = await BrandService.GetBrands();
+
+
+            var userkey = await LocalStorage.GetItemAsync<Guid>("key");
+            customer.key = userkey;
+
+        }
+
+        private async void UpdateCustomer()
+        {
+
+            try
+            {
+                await CustomerService.Update(customer);
+            }
+            catch (Exception e)
+            {
+                toastService.ShowSuccess(e.Message, customer.Name + " " + customer.Surname);
+            }
+
+        }
+
+        void CustomerDetail(int Id)
+        {
+            NavigationManager.NavigateTo("/Customer/Detail/" + Id);
+        }
+        void CustomerBack()
+        {
+            NavigationManager.NavigateTo("/Customer/List/");
+        }
+    }

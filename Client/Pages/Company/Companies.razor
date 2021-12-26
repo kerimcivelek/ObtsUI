@@ -1,0 +1,70 @@
+﻿@page "/Company/List"
+
+<Auth />
+
+
+
+
+@inject ICopmanyService CopmanyService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
+
+<div class="card bg-dark">
+    <div class="card-header bg-dark">
+        <h3 class="card-title bg-dark">
+            <button type="submit" @onclick="CompanyNew" class="btn-sm btn-dark">Yeni Firma Ekle</button>
+        </h3>
+
+        <span class="float-right"> Firma Listesi </span>
+    </div>
+    @if (companyList == null)
+    {
+        <p><em>Yükleniyor...</em></p>
+    }
+    else
+    {
+        <table class="table table-responsive-md table-bordered">
+            <thead>
+                <tr class="bg-dark">
+                    <th>İşlem</th>
+                    <th>Firma Adı</th>
+                    <th>Yetkili</th>
+                    <th>Gsm</th>
+                    <th>Adres</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var i in companyList)
+                {
+                    <tr class="bg-dark">
+                        <td><button class="btn btn-dark btn-sm" @onclick="@(() => CompanyDetail(i.Id))"><i class="fa fa-edit"></i> </button></td>
+                        <td>@i.CompanyName</td>
+                        <td>@i.Owner</td>
+                        <td>@i.Gsm</td>
+                        <td>@i.Status</td>
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+
+    CompanyDto[] companyList;
+    protected override async Task OnInitializedAsync()
+    {
+        companyList = await CopmanyService.GetCompanies();
+    }
+    void CompanyDetail(int Id)
+    {
+        NavigationManager.NavigateTo("/Company/companydetail/" + Id);
+    }
+    void CompanyNew()
+    {
+        NavigationManager.NavigateTo("/Company/Add/");
+    }
+}

@@ -1,0 +1,100 @@
+﻿@page "/User/Detail/{UserId:int}"
+
+<Auth />
+
+
+@inject IAuthService AutService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+
+@inject HttpClient Http
+@inject ILocalStorageService LocalStorage
+
+
+<div class="register-page bg-dark">
+    <!-- left column -->
+    <div class="col-md-8">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">Profil</h3>
+            </div>
+            <EditForm Model="@loginDto">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="card-body form-horizontal bg-dark">
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Kullanıcı Adı</label>
+                        <div class="col-sm-10">
+                            <InputText Class="form-control  bg-dark" Id="Surname" @bind-Value="@loginDto.UserName" required="required" />
+                            <ValidationMessage For="@(()=>loginDto.UserName)" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Adı</label>
+                        <div class="col-sm-10">
+                            <InputText Class="form-control  bg-dark" Id="Name" @bind-Value="@loginDto.FirstName" required="required" />
+                            <div class="alert-danger">
+                                <ValidationMessage For="@(()=>loginDto.FirstName)" />
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Soyadı</label>
+                        <div class="col-sm-10">
+                            <InputText Class="form-control  bg-dark" Id="LastName" @bind-Value="@loginDto.LastName" required="required" />
+                            <ValidationMessage For="@(()=>loginDto.FirstName)" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="inputPassword3" class="col-sm-2 col-form-label">Parola</label>
+                        <div class="col-sm-10">
+                            <InputText Class="form-control  bg-dark" Id="Plaka" @bind-Value="@loginDto.Password" required="required" />
+                            <ValidationMessage For="@(()=>loginDto.Password)" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="inputPassword3" class="col-sm-2 col-form-label">Aktif</label>
+                        <div class="col-sm-10">
+                            <InputCheckbox Class="form-control-sm bg-dark" Id="Address" @bind-Value="@loginDto.Status" />
+                        </div>
+                    </div>
+
+                    <input type="hidden" @bind-value="@loginDto.Role" />
+                    <input type="hidden" @bind-value="@loginDto.key" />
+
+                    <button type="submit" @onclick="Update" class="btn btn-dark float-right">Kaydet</button>
+
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int UserId { get; set; }
+    LoginDto loginDto = new LoginDto();
+    protected override async Task OnInitializedAsync()
+    {
+        loginDto = await AutService.GetByUserId(UserId);
+    }
+
+    private async void Update()
+    {
+        try
+        {
+
+            await AutService.Update(loginDto);
+        }
+        catch (Exception e)
+        {
+            toastService.ShowSuccess(e.Message.ToString(), loginDto.FirstName + " " + loginDto.LastName);
+        }
+
+    }
+
+
+}

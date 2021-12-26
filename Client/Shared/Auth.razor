@@ -1,0 +1,30 @@
+﻿@inherits ComponentBase
+@inject HttpClient Http
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@inject IAuthService AutService
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var resulttoken = await LocalStorage.GetItemAsync<string>("token");
+        if (resulttoken==null)
+        {
+            NavigationManager.NavigateTo("/login/");
+        }
+        else
+        {
+            if (!Http.DefaultRequestHeaders.Contains("Authorization"))
+            {
+                var token = await LocalStorage.GetItemAsync<string>("token");
+                Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                NavigationManager.NavigateTo("/login/");
+
+            }
+        }
+
+
+
+
+    }
+}

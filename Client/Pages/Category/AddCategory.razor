@@ -1,0 +1,61 @@
+﻿@page "/Category/Add"
+
+
+<Auth />
+@inject ICategoryService CategoryService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+@inject ILocalStorageService LocalStorage
+
+
+<div class="card card-dark">
+    <div class="card-header bg-dark">
+        <h3 class="card-title  bg-dark"><i class="fa fa-plus"></i> Yeni Kategori  Ekle</h3>
+    </div>
+    <!-- /.card-header -->
+    <!-- form start -->
+    <EditForm Model="@category">
+
+        <div class="card-body form-horizontal bg-dark">
+            <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label">Kategori Adı</label>
+                <div class="col-sm-10">
+                    <InputText Class="form-control bg-dark" Id="Name" @bind-Value="@category.Name" />
+                </div>
+            </div>
+            <div class="card-footer float-right bg-dark">
+                <button type="button" @onclick="BackToProducts" class="btn-sm btn-dark" data-dismiss="modal">Vazgeç</button>
+                <button type="submit" @onclick="NewCategory" class="btn-sm btn-dark">Kaydet</button>
+            </div>
+        </div>
+        <!-- /.card-body -->
+        <!-- /.card-footer -->
+    </EditForm>
+</div>
+
+
+@code {
+
+    Category category = new Category();
+
+    private async void NewCategory()
+    {
+        try
+        {
+            var CompanyId = await LocalStorage.GetItemAsync<int>("Company");
+            category.CompanyId = CompanyId;
+            await CategoryService.Add(category);
+            BackToProducts();
+        }
+        catch (Exception e)
+        {
+            toastService.ShowInfo(e.Message.ToString(), category.Name);
+        }
+
+    }
+
+    void BackToProducts()
+    {
+        NavigationManager.NavigateTo("/Product/Add/");
+    }
+}

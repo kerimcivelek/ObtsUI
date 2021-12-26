@@ -1,0 +1,22 @@
+﻿@inherits LayoutComponentBase
+
+
+<NavMenu />
+<BlazoredToasts Position="ToastPosition.TopRight"
+                Timeout="10"
+                IconType="IconType.FontAwesome"
+                SuccessClass="success-toast-override"
+                ErrorIcon="fa fa-exclamation"
+                SuccessIcon="fa fa-thumbs-up"
+                ShowProgressBar="true" />
+
+<div class="content-wrapper dark-mode">
+    <section class="content">
+        <div class="container-fluid">
+
+            @Body
+        </div>
+    </section>
+
+</div>
+

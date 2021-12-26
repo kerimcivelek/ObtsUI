@@ -1,0 +1,596 @@
+﻿@page "/Customer/Detail/{Id:int}"
+
+<Auth />
+
+@inject ICustomerService customerService
+@inject IOperationService operationService
+@inject IOperationDetailService operationDetailService
+@inject ICategoryService categoryService
+@inject IProductService productService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+@inject HttpClient Http
+@inject ILocalStorageService LocalStorage
+@inject INoteService noteService
+
+
+
+<div class="row">
+    <div class="col-md-3">
+
+        <!--  Customer info   -->
+        <div class="card card-dark bg-dark">
+            <div class="card-header bg-info">
+                <h3 class="card-title "><i class="fa fa-user"></i>Müşteri Bilgileri</h3>
+            </div>
+            <div class="card-body box-profile ">
+                <div class="text-center">
+                    <img class="profile-user-img img-fluid"
+                         src="../../dist/img/22266833.jpg"
+                         alt="car profile picture">
+                </div>
+                <ul class="list-group list-group-unbordered mb-3 bg-dark">
+                    <li class="list-group-item bg-dark">
+                        <b>Adı Soyadı</b> <a class="float-right"> @customer.Name @customer.Surname  </a>
+                    </li>
+                    <li class="list-group-item bg-dark">
+                        <b>Plaka</b> <a class="float-right"> @customer.Plaka  </a>
+                    </li>
+                    <li class="list-group-item bg-dark">
+                        <b>Marka Model</b> <a class="float-right">@customer.Brand</a>
+                    </li>
+                    <li class="list-group-item bg-dark">
+                        <b>Yıl</b> <a class="float-right"> @customer.Year  </a>
+                    </li>
+                    <li class="list-group-item bg-dark">
+                        <b>Yakıt Türü</b> <a class="float-right"> @customer.Fuel  </a>
+                    </li>
+                    <li class="list-group-item bg-dark">
+                        <b>Gsm</b> <a class="float-right">@customer.Gsm</a>
+                    </li>
+                    <li class="list-group-item bg-dark">
+                        <b>Not</b> <a class="float-right">@customer.Note</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="card card-dark">
+            <div class="card-header bg-info">
+                <h3 class="card-title "><i class="fa fa-toolbox"></i> İşlem Paneli</h3>
+            </div>
+            <div class="card-body bg-dark">
+                <!--  Menü  -->
+                <a class="btn btn-app bg-dark" @onclick="@(() => CustomerEdit(customer.Id))">
+
+                    <i class="fas fa-edit"></i>  Düzenle
+                </a>
+                <a class="btn btn-app bg-dark" @onclick="CustomerListBack">
+
+                    <i class="fas fa-list"></i> Müşteri Listesi
+                </a>
+                <a class="btn btn-app bg-dark" @onclick="ToggleModal">
+
+                    <i class="fas fa-file"></i> Yeni Dosya
+                </a>
+
+                <!--  Operatin Add  -->
+                <div class="@modalClass" tabindex="-1" style="display: @displayMode;">
+                    <div class="modal-dialog">
+                        <div class="modal-content bg-dark">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Başvuru Dosya Kayıt Formu</h5>
+                                <button class="close" @onclick="ToggleModal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body bg-dark">
+                                @ChildContent
+                                <EditForm Model="@operation" OnValidSubmit="AddOperation">
+                                    <DataAnnotationsValidator />
+                                    <div class="form-horizontal">
+                                        <div class="form-group row">
+                                            <label for="inputName" class="col-sm-4 col-form-label">İşlem Türü</label>
+                                            <div class="col-sm-8">
+                                                @if (operationTypes != null)
+                                                {
+                                                    <InputSelectNumber @bind-Value="@operation.OperationTypeId" id="OperationTypeId" Class="form-control bg-dark ">
+                                                        @foreach (var data in operationTypes)
+                                                            {
+                                                            <option value="@data.OperationTypeId">@data.Name</option>
+                                                            }
+                                                    </InputSelectNumber>
+                                                }
+                                                <ValidationMessage For="@(() => operation.OperationTypeId)" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="inputName" class="col-sm-4 col-form-label">Başvuru Km</label>
+                                            <div class="col-sm-8">
+                                                <input Class="form-control bg-dark " @bind-value="operation.FirstKm" @bind-value:event="oninput" />
+                                                <ValidationMessage For="@(() => operation.FirstKm)" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="inputEmail" class="col-sm-4 col-form-label">Km Periyodu</label>
+                                            <div class="col-sm-8">
+                                                <input Class="form-control bg-dark " @bind-value="operation.PeriodKm" @bind-value:event="oninput" />
+                                                <ValidationMessage For="@(() => operation.FirstKm)" />
+                                            </div>
+                                        </div>
+                                        @{
+
+                                            operation.LastKm = operation.PeriodKm + operation.FirstKm;
+                                        }
+                                        <div class="form-group row">
+                                            <label for="inputName2" class="col-sm-4 col-form-label">Sonraki Bakım Km</label>
+                                            <div class="col-sm-8">
+                                                <InputNumber Class="form-control bg-dark " Id="LastKm" @bind-Value="@operation.LastKm" disabled />
+                                                <ValidationMessage For="@(() => operation.LastKm)" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="inputExperience" class="col-sm-4 col-form-label">Açıklama</label>
+                                            <div class="col-sm-8">
+                                                <InputTextArea Class="form-control bg-dark " Id="CompanyName" @bind-Value="@operation.Note" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-dark"><i class="fa fa-check"></i> Kaydet</button>
+                                    </div>
+                                </EditForm>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  Notes   -->
+        <Note CustomerId="Id" />
+    </div>
+    <div class="col-md-9">
+        <div class="card card-dark">
+            <div class="card-header bg-info">
+                <h3 class="card-title"><i class="fa fa-file-archive"></i> Dosya Paneli</h3>
+            </div>
+            <!-- Operation Detail Add -->
+            <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content bg-dark">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLongTitle"> <i class="fa fa-list-ul"></i> Hizmet Giriş Formu </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body bg-dark">
+                            <EditForm Model="@operationDetail" OnValidSubmit="AddOperationDetail" required="required">
+                                <input type="hidden" @bind-value="@operationDetail.OperationId" />
+                                <div class="form-group row">
+                                    <label for="inputName" class="col-sm-4 col-form-label">Kategori Listesi</label>
+                                    <div class="col-sm-8">
+                                        @if (categoryList != null)
+                                        {
+                                            <InputSelectNumber id="CategoryId" Class="form-control bg-dark "
+                                                               ValueChanged="@((int value) => SelectCategory(value))"
+                                                               ValueExpression="@(() => operationDetail.CategoryId )"
+                                                               Value="operationDetail.CategoryId ">
+                                                <option value="0">--- Lütfen Kategori Seçiniz--- </option>
+                                                @foreach (var data in categoryList)
+                                                {
+                                                    <option value="@data.CategoryId">@data.CategoryName</option>
+                                                }
+                                            </InputSelectNumber>
+                                        }
+
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="inputName" class="col-sm-4 col-form-label">Ürün Listesi</label>
+                                    <div class="col-sm-8">
+                                        @if (productList != null)
+                                        {
+                                            <InputSelectNumber @bind-Value="@operationDetail.ProductId" id="ProductId" Class="form-control bg-dark " required="required">
+                                                <option tabindex="0" value="0" selected>--- Lütfen Ürün Seçiniz--- </option>
+                                                @foreach (var data in productList)
+                                                    {
+                                                    <option value="@data.ProductId">@data.ProductName</option>
+
+                                                    }
+                                            </InputSelectNumber>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="inputName2" class="col-sm-4 col-form-label">Adet</label>
+                                    <div class="col-sm-8">
+                                        <InputNumber Class="form-control bg-dark " Id="Quantity" @bind-Value="@operationDetail.Quantity" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="inputName2" class="col-sm-4 col-form-label">Fiyat</label>
+                                    <div class="col-sm-8">
+                                        <InputNumber Class="form-control bg-dark " Id="Price" @bind-Value="@operationDetail.Price" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="inputName2" class="col-sm-4 col-form-label">İndirim</label>
+                                    <div class="col-sm-8">
+                                        <InputNumber Class="form-control bg-dark " Id="Discount" @bind-Value="@operationDetail.Discount" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="inputExperience" class="col-sm-4 col-form-label">Not</label>
+                                    <div class="col-sm-8">
+                                        <InputTextArea Class="form-control bg-dark " Id="Note" @bind-Value="@operationDetail.Note" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="inputName2" class="col-sm-4 col-form-label">Dışarıdan Malzeme</label>
+                                    <div class="col-sm-8">
+                                        <InputCheckbox Class="form-control-sm bg-dark" Id="ExternalProduct" @bind-Value="@operationDetail.ExternalProduct" />
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-dark"><i class="fa fa-check"></i> Kaydet</button>
+                                </div>
+                            </EditForm>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <!-- Operation List -->
+            <div class="card-body bg-dark">
+                <div class="tab-content">
+                    <div class="card card-info card-outline card-header dark-mode">
+                        <h3 class="card-title">
+                            <i class="fas fa-list-alt"></i>
+                            Dosyalar
+                        </h3>
+                    </div>
+                    <div class="card-body table-responsive p-0">
+                        @if (operationList == null)
+                        {
+                            <div class="text-center">
+                                <div class="spinner-border text-info" role="status">
+                                    <span class="sr-only">Yükleniyor...</span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <table class="table table-hover  table-head-fixed text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>İşlem</th>
+                                        <th>Dosya Zamanı</th>
+                                        <th>Başvuru Türü</th>
+                                        <th>Muayene Km.</th>
+                                        <th>Km Periyodu</th>
+                                        <th>Sonraki Km</th>
+                                        <th>Not</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var i in operationList)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <button data-placement="top" title="Dosyaya Ürün Ekle" data-toggle="modal" data-target="#exampleModalCenter" class="btn btn-dark btn-sm" @onclick="@(() => GetByOperation(i.Id))"><i class="fa fa-folder-plus"></i></button>
+                                                <button title="Dosya Detayını Göster" data-toggle="modal" class="btn btn-dark btn-sm" @onclick="@(() => OperationDetailList(i.Id))"><i class="fa fa-level-down-alt"></i></button>
+                                                <button title="Yazdır" data-toggle="modal" class="btn btn-dark btn-sm" @onclick="@(() => OperationPrint(i.Id))"><i class="fa fa-print"></i></button>
+                                            </td>
+                                            <td>@i.RegisterDate</td>
+                                            <td>@i.OperationName</td>
+                                            <td>@i.FirstKm</td>
+                                            <td>@i.PeriodKm</td>
+                                            <td>@i.LastKm</td>
+                                            <td>@i.Note</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        <hr />
+                    </div>
+                </div>
+            </div>
+            <!-- Operation Detail List -->
+            <div class="card-body bg-dark">
+                <div class="tab-content">
+                    <div class="card card-info card-outline card-header dark-mode">
+                        <h3 class="card-title">
+                            <i class="fas fa-list-alt"></i>
+                            Dosya Detayları
+                        </h3>
+                    </div>
+                    <div class="card-body table-responsive p-0" style="max-height: 250px;">
+                        @if (_operationDetailList == null)
+                        {
+                            <p><em>Ürünleri Listelemek İçin Dosya Seçiniz</em></p>
+
+                        }
+                        else
+                        {
+                            <table class="table table-hover  table-head-fixed text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>İşlem</th>
+                                        <th>Kategori</th>
+                                        <th>Ürün Adı</th>
+                                        <th>Adet</th>
+                                        <th>Fiyat</th>
+                                        <th>İndirim</th>
+                                        <th>Toplam Fiyat</th>
+                                        <th data-placement="top" title="Dışarıdan Malzeme">DM</th>
+                                        <th>Not</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach (var i in _operationDetailList)
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                <button title="Ürün Sil" data-toggle="modal" class="btn btn-dark btn-sm" @onclick="@(() => OperationDetail(i.Id))"><i class="fa fa-trash-alt"></i></button>
+                                                <button class="btn btn-dark btn-sm" @onclick="@(() => ProductEdit(i.Id))"><i class="fa fa-edit"></i> </button>
+
+                                            </td>
+                                            <td>@i.CategoryName</td>
+                                            <td>@i.ProductName</td>
+                                            <td>@i.Quantity</td>
+                                            <td>@i.Price.ToString("C") </td>
+                                            <td>@i.Discount.ToString("C") </td>
+                                            <td>@i.Total.ToString("C") </td>
+                                            <td data-placement="top" title="Dışarıdan Malzeme">@i.ExternalProduct</td>
+                                            <td>@i.Note</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                    @if (_operationDetailList == null)
+                    {
+                    }
+                    else
+                    {
+                        <ul class="list-group float-right alert-dark text-sm">
+                            <li class="list-group-item alert-dark">Toplam Tutar    :  @_operationDetailList.Sum(x => x.SumPrice).ToString("C")</li>
+                            <li class="list-group-item alert-dark">İndirim Tutarı  :  @_operationDetailList.Sum(x => x.Discount).ToString("C")</li>
+                            <li class="list-group-item alert-dark">Tahsilat Tutarı :  @_operationDetailList.Sum(x => x.Total).ToString("C")</li>
+                        </ul>
+                    }
+                </div>
+            </div>
+
+
+            <div class="card-body bg-dark">
+                <div class="tab-content">
+                    <!-- Operation Delete -->
+                    <div class="@modalDeleteClass" id="deletemodal" tabindex="-1" style="display: @displayModeDelete;">
+                        <div class="modal-dialog">
+                            <div class="modal-content bg-dark">
+                                <EditForm Model="@operationDetail" OnValidSubmit="OperationDetaiDelete">
+                                    <div class="modal-header bg-dark">
+                                        <h4 class="modal-title"> <i class="fa fa-exclamation-circle"> Uyarı </i></h4>
+                                    </div>
+                                    <div class="modal-body bg-dark">
+                                        @ChildContentDeleteProduct
+                                        <input type="hidden" @bind-value="@operationDetail.Id" />
+                                        <div class="alert alert-dark" role="alert">
+                                            <b>Ürün silenecek onaylıyor musun ?</b>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-dark" @onclick="ToggleProductDelete" data-dismiss="modal"><i class="fa fa-times-circle"></i></button>
+                                        <button type="submit" class="btn btn-dark"><i class="fa fa-trash-alt"></i> </button>
+                                    </div>
+                                </EditForm>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+    CustomerDto customer = new CustomerDto();
+    OperationDto operation = new OperationDto();
+    OperationDetailDto operationDetail = new OperationDetailDto();
+
+    OperationListDto[] operationList;
+    OperationTypesDto[] operationTypes;
+    CategoryDto[] categoryList;
+    ProductDto[] productList;
+    OperationDetailListDto[] _operationDetailList;
+
+    NoteDto notedto = new NoteDto();
+    NoteDto[] noteList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateHasChanged();
+
+        customer = await customerService.GetCustomerById(Id);
+        operationList = await operationService.GetCustomerById(customer.Id);
+        operationTypes = await operationService.GetOperationTypes();
+
+        var userkey = await LocalStorage.GetItemAsync<Guid>("key");
+        operation.key = userkey;
+
+        operation.CustomerId = customer.Id;
+        operationDetail.RegisterDate = DateTime.Now.Date;
+
+        var CompanyId = await LocalStorage.GetItemAsync<int>("Company");
+        categoryList = await categoryService.CategoryList(CompanyId);
+        productList = await productService.Products();
+
+
+
+
+    }
+
+    private async Task SelectCategory(int value)
+    {
+
+        productList = null;
+        operationDetail.CategoryId = value;
+        await ResultProductList(value);
+        StateHasChanged();
+
+    }
+    private async Task ResultProductList(int CategoryId)
+    {
+        productList = await productService.ProductList(CategoryId);
+        StateHasChanged();
+
+    }
+
+    private async void AddOperation()
+    {
+        try
+        {
+            await operationService.Add(operation);
+        }
+        catch (Exception e)
+        {
+
+            toastService.ShowSuccess(e.Message, customer.Name + " " + customer.Surname);
+        }
+        operationList = await operationService.GetCustomerById(customer.Id);
+        operationTypes = await operationService.GetOperationTypes();
+        ToggleModal();
+
+    }
+    private void GetByOperation(int Id)
+    {
+        operationDetail.OperationId = Id;
+        StateHasChanged();
+    }
+    private void OperationDetail(int Id)
+    {
+        ToggleProductDelete();
+        operationDetail.Id = Id;
+
+    }
+    private async void AddOperationDetail()
+    {
+        try
+        {
+            await operationDetailService.Add(operationDetail);
+        }
+        catch (Exception e)
+        {
+
+            toastService.ShowSuccess(e.Message, "Bilgi");
+        }
+        _operationDetailList = await operationDetailService.GetOperationById(operationDetail.OperationId);
+        operationDetail.Price = 0;
+        operationDetail.Quantity = 1;
+        operationDetail.Discount = 0;
+        operationDetail.ExternalProduct = false;
+        operationDetail.Note = null;
+
+        StateHasChanged();
+    }
+    private async void OperationDetailList(int Id)
+    {
+        operationDetail.OperationId = Id;
+        _operationDetailList = await operationDetailService.GetOperationById(Id);
+        StateHasChanged();
+    }
+
+    private async void OperationDetaiDelete()
+    {
+        try
+        {
+            await operationDetailService.DeleteModel(operationDetail);
+        }
+        catch (Exception e)
+        {
+
+            toastService.ShowError(e.Message, "Bilgi");
+        }
+        operationDetail.Id = 0;
+        OperationDetailList(operationDetail.OperationId);
+
+        ToggleProductDelete();
+
+        StateHasChanged();
+    }
+
+
+    private void CustomerListBack()
+    {
+        NavigationManager.NavigateTo("/Customer/List");
+    }
+    void CustomerEdit(int Id)
+    {
+        NavigationManager.NavigateTo("/Customer/edit/" + Id);
+    }
+
+
+    void OperationPrint(int Id)
+    {
+        NavigationManager.NavigateTo("/Print/" + Id);
+    }
+
+    void ProductEdit(int Id)
+    {
+        NavigationManager.NavigateTo("/OperationDetail/Edit/" + Id);
+    }
+
+    #region
+
+
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+
+    bool open = false;
+    string modalClass => open ? "modal fade show" : "modal fade";
+    string displayMode => open ? "block" : "none";
+
+    private void ToggleModal()
+    {
+        open = !open;
+        StateHasChanged();
+    }
+
+
+    [Parameter]
+    public RenderFragment ChildContentDeleteProduct { get; set; }
+
+    bool openDelete = false;
+    string modalDeleteClass => openDelete ? "modal fade show" : "modal fade";
+    string displayModeDelete => openDelete ? "block" : "none";
+
+    private void ToggleProductDelete()
+    {
+        openDelete = !openDelete;
+        StateHasChanged();
+    }
+
+    #endregion
+}
+
+

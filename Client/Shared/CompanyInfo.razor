@@ -1,0 +1,32 @@
+﻿@inherits ComponentBase
+
+@inject ICopmanyService CopmanyService
+@inject ILocalStorageService LocalStorage
+ 
+ 
+
+ 
+
+<footer class="main-footer">
+    <strong><i class="fa fa-wrench"> </i>  @company.CompanyName </strong>
+</footer>
+
+
+
+
+@code {
+
+    CompanyDto company = new CompanyDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var CompanyId = await LocalStorage.GetItemAsync<int>("Company");
+        var result = await CopmanyService.GetCompanyById(CompanyId);
+        company.CompanyName = result.CompanyName;
+    }
+
+ 
+
+
+}

@@ -1,0 +1,107 @@
+﻿@page "/OperationDetail/Edit/{Id:int}"
+
+
+@inject IOperationDetailService operationDetailService
+@inject ICategoryService categoryService
+@inject IProductService productService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+@inject HttpClient Http
+@inject ILocalStorageService LocalStorage
+ 
+
+
+<div class="register-page bg-dark">
+    <!-- left column -->
+    <div class="col-md-8">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-edit"></i> Ürün Detay  :  @info.CategoryName - @info.ProductName </h3>
+            </div>
+            <EditForm Model="@operationDetail" >
+                
+                <input type="hidden" @bind-value="@operationDetail.OperationId" />
+                <input type="hidden" @bind-value="@operationDetail.CategoryId" />
+                <input type="hidden" @bind-value="@operationDetail.ProductId" />
+
+              
+
+                <div class="form-group row">
+                    <label for="inputName2" class="col-sm-4 col-form-label">Adet</label>
+                    <div class="col-sm-8">
+                        <InputNumber Class="form-control bg-dark " Id="Quantity" @bind-Value="@operationDetail.Quantity" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputName2" class="col-sm-4 col-form-label">Fiyat</label>
+                    <div class="col-sm-8">
+                        <InputNumber Class="form-control bg-dark " Id="Price" @bind-Value="@operationDetail.Price" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputName2" class="col-sm-4 col-form-label">İndirim</label>
+                    <div class="col-sm-8">
+                        <InputNumber Class="form-control bg-dark " Id="Discount" @bind-Value="@operationDetail.Discount" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputExperience" class="col-sm-4 col-form-label">Not</label>
+                    <div class="col-sm-8">
+                        <InputTextArea Class="form-control bg-dark " Id="Note" @bind-Value="@operationDetail.Note" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputName2" class="col-sm-4 col-form-label">Dışarıdan Malzeme</label>
+                    <div class="col-sm-8">
+                        <InputCheckbox Class="form-control-sm bg-dark" Id="ExternalProduct" @bind-Value="@operationDetail.ExternalProduct" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" @onclick="@(() =>CustomerDetail(info.CustomerId))" class="btn btn-dark" data-dismiss="modal"> <i class="fa fa-sign-out"></i> Dosyaya Geri Dön</button>
+                    <button type="submit" @onclick="UpdateProduct" class="btn btn-dark"><i class="fa fa-save"></i>Güncelle</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+ 
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    OperationDetailDto operationDetail = new OperationDetailDto();
+    OperationDetailListDto info = new OperationDetailListDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        operationDetail = await operationDetailService.GetById(Id);
+        info = await operationDetailService.GetByProductInfo(Id);
+    }
+
+    private async void UpdateProduct()
+    {
+
+        try
+        {
+            await operationDetailService.Update(operationDetail);
+        }
+        catch (Exception e)
+        {
+            toastService.ShowSuccess(e.Message, info.ProductName);
+        }
+
+    }
+
+    void CustomerDetail(int Id)
+    {
+        NavigationManager.NavigateTo("/Customer/Detail/" + Id);
+    }
+
+}
+
+
+
+                                 

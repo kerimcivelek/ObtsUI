@@ -1,0 +1,39 @@
+﻿@inherits ComponentBase
+
+@inject IAuthService AutService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+<div class="user-panel mt-3 pb-3 mb-3 d-flex">
+    <div class="image">
+        <img src="../../dist/img/Uprofil.png" class="img-circle elevation-2" alt="User Image">
+    </div>
+    <div class="info">
+        <a role="button" @onclick="@(() => Profil(logindto.Id))" class="d-block">@logindto.FirstName @logindto.LastName</a>
+    </div>
+</div>
+
+@code {
+
+    LoginDto logindto = new LoginDto();
+    int UserId;
+    protected override async Task OnInitializedAsync()
+    {
+
+        var userkey = await LocalStorage.GetItemAsync<Guid>("key");
+
+        var result = await AutService.GetByUser(userkey);
+
+        logindto.Id = result.Id;
+        logindto.FirstName = result.FirstName;
+        logindto.LastName = result.LastName;
+
+        UserId = logindto.Id;
+
+    }
+
+    void Profil(int UserId)
+    {
+        NavigationManager.NavigateTo("/User/Detail/"+ UserId);
+    }
+}

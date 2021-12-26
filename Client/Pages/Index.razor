@@ -1,0 +1,350 @@
+﻿@page "/"
+
+ <Auth/>
+@inject ICustomerService CustomerService
+@inject IDashBoardService DashBoardService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
+@inject ILocalStorageService LocalStorage
+
+<div class="card card-info card-outline row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-chart-area"></i> Bilgi Paneli </h5>
+
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-3 ">
+                        <div class="info-box ">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-users-cog"></i></span>
+
+                            <div class="info-box-content dark-mode">
+                                <span class="info-box-text">Toplam Müşteri <span class="float-right">@DateTime.Now.ToString("MMMM")</span>  </span>
+                                <span class="info-box-number">
+                                    @if (DashboardTotalMonthDto == null)
+                                    {
+                                        <span>0</span>
+                                    }
+                                    else
+                                    {
+                                        @DashboardTotalMonthDto.TotalCustomerThisMonth
+                                    }
+                                    <small></small>
+                                </span>
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-wrench"></i></span>
+
+                            <div class="info-box-content dark-mode">
+                                <span class="info-box-text">Toplam Müşteri <span class="float-right">Bugün</span></span>
+                                @if (DashboardTotalDayDto == null)
+                                {
+                                    <span>0</span>
+                                }
+                                else
+                                {
+                                    @DashboardTotalDayDto.TotalCustomerThisDay
+                                }
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                    <!-- /.col -->
+                    <!-- fix for small devices only -->
+                    <div class="clearfix hidden-md-up"></div>
+                    <div class="col-12 col-sm-6 col-md-3 ">
+                        <div class="info-box ">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-money-check-alt"></i></span>
+
+                            <div class="info-box-content dark-mode">
+                                <span class="info-box-text"> Toplam Tutar <span class="float-right"> @DateTime.Now.ToString("MMMM") </span> </span>
+                                <span class="info-box-number">
+                                    @if (DashboardTotalMonthDto == null)
+                                    {
+                                        <span>0</span>
+                                    }
+                                    else
+                                    {
+                                        @DashboardTotalMonthDto.TotalPriceThisMonth.ToString("C")
+                                    }
+                                    <small></small>
+                                </span>
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-money-check"></i></span>
+
+                            <div class="info-box-content dark-mode">
+                                <span class="info-box-text">Toplam Tutar <span class="float-right">Bugün</span></span>
+                                @if (DashboardTotalDayDto == null)
+                                {
+                                    <span>0</span>
+                                }
+                                else
+                                {
+                                    @DashboardTotalDayDto.TotalPriceThisDay.ToString("C");
+                                }
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                    <!-- /.card-footer -->
+                </div>
+                <!-- /.card -->
+            </div>
+            <!-- /.col -->
+        </div>
+    </div>
+
+</div>
+
+<div class="card card-info card-outline row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-chart-area"></i>Aylık İşlem İnceleme </h5>
+
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fa fa-calendar-day"></i>  @DateTime.Now.ToString("MMMM")  -   İşlem Türü Dağılımı</h3>
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body table-responsive p-0" style="height: 200px;">
+                                @if (OperataionTypeReport == null)
+                                {
+                                    <div class="text-center">
+                                        <div class="spinner-border text-info" role="status">
+                                            <span class="sr-only"> Kayıt Yok</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <table class="table table-hover table-head-fixed text-nowrap">
+                                        <thead>
+                                            <tr>
+                                                <th> İşlem Türü</th>
+                                                <th>Toplam Dosya</th>
+                                                <th>Toplam Tutar</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var i in OperataionTypeReport)
+                                            {
+                                                <tr class="bg-dark">
+                                                    <td> @i.OperationTypeName</td>
+                                                    <td>@i.totalOperation</td>
+                                                    <td>@i.totalPrice.ToString("C")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                    <div class="clearfix hidden-md-up"></div>
+                    <div class="col-sm-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fa fa-calendar-day"></i> @DateTime.Now.ToString("MMMM") - Kategoriye Göre Ürün Dağılımı</h3>
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body table-responsive p-0" style="height: 200px;">
+                                @if (ProductByCategoryReport == null)
+                                {
+                                    <div class="text-center">
+                                        <div class="spinner-border text-info" role="status">
+                                            <span class="sr-only">Kayıt Yok</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <table class="table table-hover table-head-fixed text-nowrap">
+                                        <thead>
+                                            <tr>
+                                                <th> Kategori</th>
+                                                <th>Ürün</th>
+                                                <th>Toplam Adet</th>
+                                                <th>Toplam Tutar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var i in ProductByCategoryReport)
+                                            {
+                                                <tr class="bg-dark">
+                                                    <td> @i.CategoryName</td>
+                                                    <td>@i.ProductName</td>
+                                                    <td>@i.totalOperation</td>
+                                                    <td>@i.totalPrice.ToString("C")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                    <!-- /.col -->
+                    <!-- fix for small devices only -->
+                    <!-- /.card-footer -->
+                </div>
+                <!-- /.card -->
+            </div>
+            <!-- /.col -->
+        </div>
+    </div>
+
+</div>
+
+
+
+
+<div class="card card-info card-outline row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"> <i class="fa fa-calendar-check"></i> Bugün ( @DateTime.Now.Date.ToString("dd.MM.yyyy") )  </h3>
+
+                <div class="card-tools">
+                    <span> Müşteri Listesi</span>
+                </div>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body table-responsive p-0" style="height: 300px;">
+                @if (customerList == null)
+                {
+                    <div class="text-center">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="sr-only">Yükleniyor...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <table id="example" class="table table-hover table-head-fixed text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>İşlemler</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>Müşteri Adı</th>
+                                <th>Soyadı</th>
+                                <th>Plaka</th>
+                                <th>Marka-Model</th>
+                                <th>Gsm</th>
+                                <th>Not</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var i in customerList)
+                            {
+                                <tr class="bg-dark">
+                                    <td>
+                                        <button class="btn btn-dark btn-sm" @onclick="@(() => CustomerDetail(i.Id))"><i class="fa fa-wrench"></i></button>
+                                        <button class="btn btn-dark btn-sm" @onclick="@(() => CustomerEdit(i.Id))"><i class="fa fa-edit"></i> </button>
+
+                                    </td>
+                                    <td>@i.RegisterDate</td>
+                                    <td>@i.Name</td>
+                                    <td>@i.Surname</td>
+                                    <td>@i.Plaka</td>
+                                    <td>@i.Brand</td>
+                                    <td>@i.Gsm</td>
+                                    <td>@i.Note</td>
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+</div>
+
+@code
+{
+    CustomerDto[] customerList;
+
+    DashboardTotalMonthDto DashboardTotalMonthDto = new DashboardTotalMonthDto();
+    DashboardTotalDayDto DashboardTotalDayDto = new DashboardTotalDayDto();
+    DashboardListDto[] OperataionTypeReport;
+    DashboardListDto[] ProductByCategoryReport;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var CompanyId = await LocalStorage.GetItemAsync<int>("Company");
+
+
+        DashboardTotalMonthDto = await DashBoardService.TotalDashboardInfoMonth(CompanyId);
+        DashboardTotalDayDto = await DashBoardService.TotalDashboardInfoDay(CompanyId);
+
+        OperataionTypeReport = await DashBoardService.OperataionTypeReport(CompanyId);
+        ProductByCategoryReport = await DashBoardService.ProductByCategoryReport(CompanyId);
+
+        var date = DateTime.Now.Date.ToString("yyyy-MM-dd");
+
+        customerList = await CustomerService.GetCustomerDate(date, CompanyId);
+
+    }
+
+
+
+    void CustomerDetail(int Id)
+    {
+        NavigationManager.NavigateTo("/Customer/Detail/" + Id);
+    }
+
+    void CustomerEdit(int Id)
+    {
+        NavigationManager.NavigateTo("/Customer/edit/" + Id);
+    }
+
+
+
+}
+
+

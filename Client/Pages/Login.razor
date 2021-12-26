@@ -1,0 +1,110 @@
+﻿@layout LoginLayout
+@page "/login"
+
+
+@inject Blazored.LocalStorage.ILocalStorageService localStore
+@inject IAuthService AutService
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
+@inject HttpClient Http
+@inject IToastService toastService
+
+
+
+<div class="hold-transition login-page bg-dark">
+    <div class="image">
+        <img src="../../dist/img/156485.jpg" class="profile-user-img img-fluid img-circle">
+    </div>
+    <div class="login-box bg-info">
+
+        <div class="login-logo bg-dark">
+            <a><b>OBTS</b> | Login</a>
+
+        </div>
+        <!-- /.login-logo -->
+        <div class="card bg-dark">
+            <div class="card-body login-card-body bg-dark">
+                <p class="login-box-msg">Araç Bakım Sistemi</p>
+
+                <EditForm Model="@loginDto">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <label class="col-sm-12 col-form-label float-lg-left">Kullanıcı Girişi</label>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="loginDto.UserName" id="UserName" placeholder="Kullanıcı Adınızı Giriniz" class="form-control bg-dark" required="required" />
+                        <div class="input-group-append">
+                            <div class="input-group-text bg-dark">
+                                <span class="fas fa-user"></span>
+                            </div>
+                        </div>
+                        <div class="alert-danger">
+                            <ValidationMessage For="@(()=>loginDto.UserName)" />
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+
+                        <InputText @bind-Value="loginDto.Password" type="password" id="Password" placeholder="Parolanızı Giriniz" class="form-control bg-dark" required="required" />
+                        <div class="input-group-append">
+                            <div class="input-group-text bg-dark">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                        <div class="alert-danger">
+                            <ValidationMessage For="@(()=>loginDto.Password)" />
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        <!-- /.col -->
+                        <div class="col-12">
+                            <button type="submit" @onclick="@HandleLogin" class="btn btn-block btn-info bg-dark"> Giriş</button>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                </EditForm>
+
+            </div>
+            <!-- /.login-card-body -->
+        </div>
+    </div>
+</div>
+
+
+
+
+@code {
+    LoginDto loginDto = new LoginDto();
+    public string messages { get; private set; }
+    private async Task HandleLogin()
+    {
+        toastService.ShowInfo("Lütfen Bekleyiniz...", "Giriş");
+        try
+        {
+            await AutService.Login(loginDto);
+
+
+
+            if (!Http.DefaultRequestHeaders.Contains("Authorization"))
+            {
+
+                //var token = await LocalStorage.GetItemAsync<string>("token");
+                //Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            else
+            {
+                toastService.ShowSuccess("Yükleniyor", "Giriş Başarılı");
+                NavigationManager.NavigateTo("/");
+
+            }
+        }
+        catch (Exception)
+        {
+
+
+            toastService.ShowError("Kullanıcı adı veya şifre hatalı", "Giriş Yapılamadı");
+        }
+    }
+
+
+
+}

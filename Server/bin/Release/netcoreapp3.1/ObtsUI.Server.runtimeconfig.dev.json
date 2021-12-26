@@ -1,0 +1,8 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "C:\\Users\\Kerim\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\Kerim\\.nuget\\packages"
+    ]
+  }
+}
